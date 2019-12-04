@@ -5,9 +5,6 @@ import me.droreo002.bot.handler.TankPacketHandler;
 import me.droreo002.bot.utils.ByteReader;
 import me.droreo002.bot.utils.PacketDataCollector;
 
-import static me.droreo002.bot.utils.BotLog.*;
-import static me.droreo002.bot.utils.PacketUtils.*;
-
 public class OnSendToServerHandler implements TankPacketHandler {
 
     @Override

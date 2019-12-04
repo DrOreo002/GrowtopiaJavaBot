@@ -2,9 +2,8 @@ package me.droreo002.bot;
 
 import com.google.gson.Gson;
 import enetjava.ENetLib;
-import jline.console.ConsoleReader;
 import me.droreo002.bot.models.GrowtopiaBot;
-import me.droreo002.bot.utils.BotLog;
+import me.droreo002.bot.logging.BotLog;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -30,13 +29,18 @@ public class Launcher {
         /*
 		Init
 		 */
-        BotLog.getInstance();
+        BotLog.init();
 
         GrowtopiaBot bot = new GrowtopiaBot(botData.get("botUsername"), botData.get("botPassword"));
         bot.connect("209.59.191.86", 17093, 0, 0);
         BotManager.registerBot(bot);
 
         BotManager.run();
+
+        String line;
+        while ((line = BotLog.getInstance().getConsoleReader().readLine( ">" )) != null) {
+            BotLog.log("Hello: " + line);
+        }
     }
 
     private Map<String, String> readBotData() throws FileNotFoundException {

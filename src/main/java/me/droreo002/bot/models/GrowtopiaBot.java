@@ -7,7 +7,7 @@ import enetjava.objects.ENetPeer;
 import lombok.Data;
 import me.droreo002.bot.handler.PacketHandler;
 import me.droreo002.bot.enums.PacketType;
-import me.droreo002.bot.utils.BotLog;
+import me.droreo002.bot.logging.BotLog;
 import me.droreo002.bot.utils.PacketUtils;
 
 import java.net.InetSocketAddress;

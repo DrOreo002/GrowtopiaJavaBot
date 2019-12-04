@@ -3,8 +3,7 @@ package me.droreo002.bot.handler.model;
 import me.droreo002.bot.handler.PacketHandler;
 import me.droreo002.bot.models.GrowtopiaBot;
 
-import static me.droreo002.bot.utils.BotLog.log;
-import static me.droreo002.bot.utils.PacketUtils.getHexDump;
+import static me.droreo002.bot.logging.BotLog.log;
 import static me.droreo002.bot.utils.PacketUtils.sendPacket;
 
 public class OnPacketType6Handler extends PacketHandler {

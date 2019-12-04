@@ -2,7 +2,7 @@ package me.droreo002.bot.handler.model;
 
 import me.droreo002.bot.handler.PacketHandler;
 import me.droreo002.bot.models.GrowtopiaBot;
-import me.droreo002.bot.utils.BotLog;
+import me.droreo002.bot.logging.BotLog;
 
 import static me.droreo002.bot.utils.PacketUtils.*;
 

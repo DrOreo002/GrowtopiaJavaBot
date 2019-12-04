@@ -1,10 +1,13 @@
-package me.droreo002.bot.utils;
+package me.droreo002.bot.logging;
 
+import jline.console.ConsoleReader;
 import lombok.Getter;
+import org.fusesource.jansi.Ansi;
+import org.fusesource.jansi.AnsiConsole;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -15,25 +18,37 @@ public class BotLog {
 
     private static BotLog instance;
 
-    public static BotLog getInstance() {
-        if (instance == null) {
-            instance = new BotLog();
-            return instance;
+    public static void init() {
+        if (instance != null) throw new IllegalStateException("Already initialized!");
+        System.out.println("Initializing logger..");
+        AnsiConsole.systemInstall();
+        try {
+            ConsoleReader reader = new ConsoleReader();
+            reader.setExpandEvents(true);
+            instance = new BotLog(reader);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
+
+    public static BotLog getInstance() {
         return instance;
     }
 
     @Getter
     private final Logger logger = Logger.getLogger(BotLog.class.getName());
+    @Getter
+    private final ConsoleReader consoleReader;
 
-    private BotLog() {
+    private BotLog(ConsoleReader consoleReader) {
+        this.consoleReader = consoleReader;
         Handler[] handlers = logger.getHandlers();
-        for(Handler handler : handlers) {
+        for (Handler handler : handlers) {
             logger.removeHandler(handler);
         }
         logger.setUseParentHandlers(false);
 
-        ConsoleHandler handler = new ConsoleHandler();
+        BotLogHandler handler = new BotLogHandler(consoleReader);
         handler.setFormatter(new BotLogFormatter());
         logger.addHandler(handler);
     }
@@ -45,22 +60,14 @@ public class BotLog {
     private static class BotLogFormatter extends Formatter {
 
         // ANSI escape code
-        public static final String ANSI_RESET = "\u001B[0m";
-        public static final String ANSI_BLACK = "\u001B[30m";
-        public static final String ANSI_RED = "\u001B[31m";
-        public static final String ANSI_GREEN = "\u001B[32m";
-        public static final String ANSI_YELLOW = "\u001B[33m";
-        public static final String ANSI_BLUE = "\u001B[34m";
-        public static final String ANSI_PURPLE = "\u001B[35m";
-        public static final String ANSI_CYAN = "\u001B[36m";
-        public static final String ANSI_WHITE = "\u001B[37m";
+        static final String ANSI_RESET = Ansi.ansi().a(Ansi.Attribute.RESET).toString();
+        static final String ANSI_GREEN = Ansi.ansi().a(Ansi.Attribute.RESET).fg(Ansi.Color.GREEN).boldOff().toString();
+        static final String ANSI_WHITE = Ansi.ansi().a(Ansi.Attribute.RESET).fg(Ansi.Color.WHITE).boldOff().toString();
 
         @Override
         public String format(LogRecord record) {
-            // This example will print date/time, class, and log level in yellow,
-            // followed by the log message and it's parameters in white .
             StringBuilder builder = new StringBuilder();
-            builder.append(ANSI_BLUE);
+            builder.append(ANSI_GREEN);
 
             builder.append("[");
             builder.append(calcDate(record.getMillis()));
@@ -72,19 +79,7 @@ public class BotLog {
             builder.append(" ");
             builder.append(record.getMessage());
 
-            Object[] params = record.getParameters();
-
-            if (params != null) {
-                builder.append("\t");
-                for (int i = 0; i < params.length; i++) {
-                    builder.append(params[i]);
-                    if (i < params.length - 1)
-                        builder.append(", ");
-                }
-            }
-
             builder.append(ANSI_RESET);
-            builder.append("\n");
             return builder.toString();
         }
 

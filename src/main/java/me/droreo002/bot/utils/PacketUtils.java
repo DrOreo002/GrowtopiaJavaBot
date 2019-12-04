@@ -7,17 +7,13 @@ import me.droreo002.bot.enums.DataType;
 import me.droreo002.bot.handler.PacketHandler;
 import me.droreo002.bot.enums.PacketType;
 import me.droreo002.bot.handler.TankPacketHandler;
+import me.droreo002.bot.logging.BotLog;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static me.droreo002.bot.utils.GamePacket.*;
-import static me.droreo002.bot.utils.BotLog.log;
+import static me.droreo002.bot.logging.BotLog.log;
 
 public class PacketUtils {
 

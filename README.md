@@ -1,3 +1,5 @@
+[![GrowtopiaBot](https://github.com/DrOreo002/GrowtopiJavaaBot/blob/master/JavaGT.png)](https://github.com/DrOreo002/GrowtopiaJavaBot)
+
 # GrowtopiaJavaBot
 A simple growtopia bot, made with Java!
 

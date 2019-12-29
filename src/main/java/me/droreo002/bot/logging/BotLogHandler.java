@@ -22,7 +22,6 @@ public class BotLogHandler extends Handler {
         if (isLoggable(record)) {
             try {
                 System.out.println(Ansi.ansi().eraseLine(Ansi.Erase.ALL).toString() + ConsoleReader.RESET_LINE + getFormatter().format(record) + Ansi.ansi().reset().toString());
-                consoleReader.drawLine();
                 consoleReader.flush();
             } catch (IOException e) {
                 e.printStackTrace();

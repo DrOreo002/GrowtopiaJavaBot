@@ -1,5 +1,6 @@
 package me.droreo002.bot;
 
+import lombok.Getter;
 import me.droreo002.bot.models.GrowtopiaBot;
 import org.jetbrains.annotations.Nullable;
 
@@ -8,7 +9,11 @@ import java.util.List;
 
 public final class BotManager {
 
+    @Getter
     private static final List<GrowtopiaBot> bots = new ArrayList<>();
+    @Getter
+    private static final List<Thread> botThread = new ArrayList<>();
+    @Getter
     private static boolean running = false;
 
     @Nullable
@@ -30,13 +35,21 @@ public final class BotManager {
     public static void run() {
         running = true;
         for (GrowtopiaBot bot : bots) {
-            new Thread(() -> {
-                try {
-                    bot.eventLoop();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }).start();
+            botThread.add(
+                new Thread(() -> {
+                    try {
+                        bot.eventLoop();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                })
+            );
         }
+
+        botThread.forEach(Thread::start);
+    }
+
+    public static void stop() {
+        running = false;
     }
 }

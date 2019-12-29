@@ -8,6 +8,8 @@ import org.fusesource.jansi.AnsiConsole;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -19,7 +21,9 @@ public class BotLog {
     private static BotLog instance;
 
     public static void init() {
-        if (instance != null) throw new IllegalStateException("Already initialized!");
+        if (instance != null) {
+            throw new IllegalStateException("Already initialized!");
+        }
         System.out.println("Initializing logger..");
         AnsiConsole.systemInstall();
         try {
@@ -39,9 +43,13 @@ public class BotLog {
     private final Logger logger = Logger.getLogger(BotLog.class.getName());
     @Getter
     private final ConsoleReader consoleReader;
+    @Getter
+    private final Set<UIConsole> consoles;
 
     private BotLog(ConsoleReader consoleReader) {
         this.consoleReader = consoleReader;
+        this.consoles = new HashSet<>();
+
         Handler[] handlers = logger.getHandlers();
         for (Handler handler : handlers) {
             logger.removeHandler(handler);
@@ -53,8 +61,28 @@ public class BotLog {
         logger.addHandler(handler);
     }
 
-    public void info(String msg) {
+    public void info(String msg, LogType logType) {
+        for (UIConsole c : this.consoles) {
+            c.print(msg, logType);
+        }
         logger.log(Level.INFO, msg);
+    }
+
+    public UIConsole getUIConsole(String name) {
+        return this.consoles.stream().filter(uiConsole -> uiConsole.getConsoleName().equals(name)).findAny().orElse(null);
+    }
+
+    public void registerUIConsole(UIConsole uiConsole) {
+        if (getUIConsole(uiConsole.getConsoleName()) != null) throw new IllegalStateException("UI Console with the name of " + uiConsole.getConsoleName() + " is already registered!");
+        this.consoles.add(uiConsole);
+    }
+
+    public static void log(String s, LogType logType) {
+        BotLog.getInstance().info(s, logType);
+    }
+
+    public static void log(int s, LogType logType) {
+        log(Integer.toString(s), logType);
     }
 
     private static class BotLogFormatter extends Formatter {
@@ -79,7 +107,6 @@ public class BotLog {
             builder.append(" ");
             builder.append(record.getMessage());
 
-            builder.append(ANSI_RESET);
             return builder.toString();
         }
 
@@ -90,11 +117,9 @@ public class BotLog {
         }
     }
 
-    public static void log(String s) {
-        BotLog.getInstance().info(s);
-    }
-
-    public static void log(int s) {
-        log(Integer.toString(s));
+    public enum LogType {
+        BOT, // Both
+        PACKET, // All packet related, except for TANK_PACKET
+        TANK_PACKET // Specified
     }
 }

@@ -8,11 +8,11 @@ import me.droreo002.bot.utils.PacketUtils;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-public class OnLoginHandler extends PacketHandler {
+public class OnLoginHandler implements PacketHandler {
 
     @Override
     public void handle(byte[] packetData, int packetType, GrowtopiaBot bot) {
-        BotLog.log("Sending login packet..");
+        BotLog.log("Sending login packet..", BotLog.LogType.BOT);
         PacketStringBuilder builder = PacketStringBuilder.init()
                 .add("tankIDName", bot.getUserName())
                 .add("tankIDPass", bot.getUserPassword())
@@ -40,7 +40,7 @@ public class OnLoginHandler extends PacketHandler {
         if (bot.getUserId() != 0) builder.add("user", bot.getUserId());
         if (bot.getUserToken() != 0) builder.add("token", bot.getUserToken());
 
-        PacketUtils.sendPacket(new byte[]{0x02}, builder.getPacketData(), bot.getPeer());
+        PacketUtils.sendPacket(2, builder.getPacketData(), bot.getPeer());
     }
 
     private String random4Digit() {

@@ -15,7 +15,6 @@ public class OnSendToServerHandler implements TankPacketHandler {
         int userToken = (int) collector.getData(2).getData();
         int userId = (int) collector.getData(3).getData();
 
-        // TODO: 03/12/2019 Change, debug purpose here
         try {
             BotManager.getBot(0).connect(ip, port, userId, userToken);
         } catch (Exception e) {

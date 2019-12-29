@@ -77,15 +77,6 @@ public class GamePacket {
 	}
 
 	public static ByteBuffer createDataPacket(byte[] num, byte[] data, int len) {
-		/*
-		System.arraycopy(sourceArray,
-                 sourceStartIndex,
-                 targetArray,
-                 targetStartIndex,
-                 length);
-
-         memcpy(dest, source, length)
-		 */
 		// Basically append number to array n on index 4
 		byte[] n = new byte[len + 5];
 		System.arraycopy(num, 0, n, 0, len);

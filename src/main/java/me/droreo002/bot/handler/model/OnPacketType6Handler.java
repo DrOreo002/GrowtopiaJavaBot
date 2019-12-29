@@ -6,12 +6,12 @@ import me.droreo002.bot.models.GrowtopiaBot;
 import static me.droreo002.bot.logging.BotLog.log;
 import static me.droreo002.bot.utils.PacketUtils.sendPacket;
 
-public class OnPacketType6Handler extends PacketHandler {
+public class OnPacketType6Handler implements PacketHandler {
 
     @Override
     public void handle(byte[] packetData, int packetType, GrowtopiaBot bot) {
         //log("Handling packet type " + packetType + " packet is " + getHexDump(packetData));
-        sendPacket(new byte[]{0x02}, "action|enter_game\n", bot.getPeer());
+        sendPacket(2, "action|enter_game\n", bot.getPeer());
         bot.getClient().flush();
     }
 }

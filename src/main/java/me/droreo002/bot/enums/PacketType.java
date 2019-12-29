@@ -8,8 +8,12 @@ import me.droreo002.bot.handler.model.OnLoginHandler;
 import me.droreo002.bot.handler.model.OnPacketType3Handler;
 import me.droreo002.bot.handler.model.OnPacketType4Handler;
 import me.droreo002.bot.handler.model.OnPacketType6Handler;
+import me.droreo002.bot.handler.model.tank.OnTalkBubbleHandler;
 import me.droreo002.bot.handler.model.tank.OnUnknownHandler;
 import me.droreo002.bot.handler.model.tank.OnSendToServerHandler;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public enum PacketType {
 
@@ -17,8 +21,9 @@ public enum PacketType {
     Actual packet
      */
     ON_LOGIN_REQUESTED("OnLoginRequested", 1),
+
     // Packet type 4
-    ON_SEND_TO_SERVER("OnSendToServer"),
+    ON_SEND_TO_SERVER("OnSendToServer", Integer.class, Integer.class, String.class, Integer.class),
     ON_CONSOLE_MESSAGE("OnConsoleMessage"),
     ON_PLAY_POSITIONED("OnPlayPositioned"),
     ON_SET_FREEZE_STATE("OnSetFreezeState"),
@@ -39,9 +44,9 @@ public enum PacketType {
     /*
     Misc
      */
-    ON_PACKET_TYPE_3("OnPacketType3", 3),
-    ON_PACKET_TYPE_4("OnPacketType4", 4),
-    ON_PACKET_TYPE_6("OnPacketType6", 6),
+    ON_PACKET_TYPE_3("OnPacketType3", -1),
+    ON_PACKET_TYPE_4("OnPacketType4", -1),
+    ON_PACKET_TYPE_6("OnPacketType6", -1),
     ON_CONNECTED("OnConnected", -1),
     ON_DISCONNECTED("OnDisconnected", -1),
     ON_UNKNOWN("OnUnknown", -1);
@@ -50,17 +55,36 @@ public enum PacketType {
     private String name;
     @Getter
     private int packetTypeId;
+    @Getter
+    private Class[] packetParam;
+
+    PacketType(String name, int packetTypeId, Class... packetParam) {
+        this.name = name;
+        this.packetTypeId = packetTypeId;
+        this.packetParam = packetParam;
+    }
+
+    PacketType(String name, Class... packetParam) {
+        this.name = name;
+        this.packetTypeId = 4;
+        this.packetParam = packetParam;
+    }
 
     PacketType(String name, int packetTypeId) {
         this.name = name;
         this.packetTypeId = packetTypeId;
+        this.packetParam = null;
     }
 
     PacketType(String name) {
         this.name = name;
-        this.packetTypeId = -1;
+        this.packetTypeId = 4;
+        this.packetParam = null;
     }
 
+    public boolean isTankPacket() {
+        return this.packetTypeId == 4;
+    }
 
     public PacketHandler getHandler() {
         switch (name) {
@@ -76,17 +100,17 @@ public enum PacketType {
         return null;
     }
 
-
     public TankPacketHandler getTankHandler() {
         switch (name) {
             case "OnSendToServer":
                 return new OnSendToServerHandler();
             case "OnUnknown":
                 return new OnUnknownHandler();
+            case "OnTalkBubble":
+                return new OnTalkBubbleHandler();
         }
         return null;
     }
-
 
     public static PacketType fromPacketName(String name) {
         for (PacketType n : values()) {
@@ -95,11 +119,11 @@ public enum PacketType {
         return null;
     }
 
-
-    public static PacketType fromPacketId(int packetId) {
+    public static PacketType[] fromPacketId(int packetId) {
+        List<PacketType> found = new ArrayList<>();
         for (PacketType n : values()) {
-            if (n.getPacketTypeId() == packetId) return n;
+            if (n.getPacketTypeId() == packetId) found.add(n);
         }
-        return null;
+        return (PacketType[]) found.toArray();
     }
 }

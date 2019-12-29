@@ -29,10 +29,10 @@ public class PacketUtils {
         peer.sendPacket(0, packet);
     }
 
-    public static void sendPacket(byte[] packetId, String packetData, ENetPeer peer) {
+    public static void sendPacket(int packetId, String packetData, ENetPeer peer) {
         if (peer == null) return;
         byte[] pData = new byte[packetData.length() + 5];
-        System.arraycopy(packetId, 0, pData, 0, packetId.length);
+        pData[0] = (byte) packetId;
         System.arraycopy(packetData.getBytes(), 0, pData, 4, packetData.length());
         try {
             ENetPacket packet = new ENetPacket(pData, EnumSet.of(ENetPacket.Flag.RELIABLE));
@@ -112,9 +112,17 @@ public class PacketUtils {
 
     public static PacketHandler determineHandler(byte[] packetData) {
         int packetId = getPacketId(packetData);
-        PacketType handlers = PacketType.fromPacketId(packetId);
-        if (handlers == null) return null;
-        return handlers.getHandler();
+        switch (packetId) {
+            case 3:
+                return PacketType.ON_PACKET_TYPE_3.getHandler();
+            case 4:
+                return PacketType.ON_PACKET_TYPE_4.getHandler();
+            case 6:
+                return PacketType.ON_PACKET_TYPE_6.getHandler();
+            case 1:
+                return PacketType.ON_LOGIN_REQUESTED.getHandler();
+        }
+        return null;
     }
 
     public static void print(byte[] packetData) {
@@ -122,7 +130,7 @@ public class PacketUtils {
         for (byte b : packetData.clone()) {
             bytes.append((b & 0xFF)).append(", ");
         }
-        BotLog.log(bytes.toString());
+        BotLog.log(bytes.toString(), BotLog.LogType.BOT);
     }
 
     public static String getTextFromPacket(byte[] packetData) {
@@ -154,7 +162,7 @@ public class PacketUtils {
         if (length >= 60) {
             if ((byteBuffer.get(16) & 8) != 0) {
                 if (length < ((int)byteBuffer.get(56)) + 60) {
-                    BotLog.log("[TankPacket] WARNING: Tank packet is to small for extended packet to be valid!");
+                    BotLog.log("[TankPacket] WARNING: Tank packet is to small for extended packet to be valid!", BotLog.LogType.TANK_PACKET);
                     return null;
                 }
             } else {
@@ -179,7 +187,7 @@ public class PacketUtils {
         ByteReader reader = new ByteReader(packetData);
         byte count = reader.readByte();
 
-        log("----------------------> Processing tank packet!. Count: " + count + " Size: " + bufferSize + " NetID: " + netId);
+        log("----------------------> Processing tank packet!. Count: " + count + " Size: " + bufferSize + " NetID: " + netId, BotLog.LogType.TANK_PACKET);
 
         Process process = new Process();
 
@@ -189,7 +197,7 @@ public class PacketUtils {
             byte type = reader.readByte();
             DataType dataType = DataType.fromAlias(type);
             if (dataType == null) {
-                log("Unknown data type... " + type);
+                log("Unknown data type... " + type, BotLog.LogType.TANK_PACKET);
                 continue;
             }
 
@@ -207,25 +215,25 @@ public class PacketUtils {
             }
 
             if (dataType == DataType.FLOAT) {
-                log("Found float!");
+                log("Found float!", BotLog.LogType.TANK_PACKET);
                 float dat = reader.readFloat();
             }
 
             if (dataType == DataType.VECTOR2) {
                 float x = reader.readFloat();
                 float y = reader.readFloat();
-                log("Found Vector2! X:" + x + " Y:" + y);
+                log("Found Vector2! X:" + x + " Y:" + y, BotLog.LogType.TANK_PACKET);
             }
 
             if (dataType == DataType.VECTOR3) {
                 float x = reader.readFloat();
                 float y = reader.readFloat();
                 float z = reader.readFloat();
-                log("Found Vector3! X:" + x + " Y:" + y + " Z:" + z);
+                log("Found Vector3! X:" + x + " Y:" + y + " Z:" + z, BotLog.LogType.TANK_PACKET);
             }
         }
 
-        log("Found packet: " + collector.toString());
+        log("Found packet: " + collector.toString(), BotLog.LogType.TANK_PACKET);
 
         PacketType packetType = PacketType.fromPacketName((String) collector.getData(DataType.STRING).get(0).getData());
         if (packetType == null) {
@@ -233,13 +241,13 @@ public class PacketUtils {
         } else {
             TankPacketHandler handler = packetType.getTankHandler();
             if (handler == null) {
-                log("Failed to find tank packet handler for " + packetType.getName());
+                log("Failed to find tank packet handler for " + packetType.getName(), BotLog.LogType.TANK_PACKET);
             } else {
                 handler.handle(packetData, reader, collector);
             }
         }
 
-        log(process.stop("----------------------> Success!. took %timems!"));
+        log(process.stop("----------------------> Success!. took %timems!"), BotLog.LogType.TANK_PACKET);
     }
 
     public static String bytesToHex(byte[] hashInBytes) {

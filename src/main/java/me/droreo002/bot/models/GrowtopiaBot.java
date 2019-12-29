@@ -5,6 +5,8 @@ import enetjava.objects.ENetHost;
 import enetjava.objects.ENetPacket;
 import enetjava.objects.ENetPeer;
 import lombok.Data;
+import me.droreo002.bot.BotManager;
+import me.droreo002.bot.enums.ActionPacket;
 import me.droreo002.bot.handler.PacketHandler;
 import me.droreo002.bot.enums.PacketType;
 import me.droreo002.bot.logging.BotLog;
@@ -13,6 +15,8 @@ import me.droreo002.bot.utils.PacketUtils;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static me.droreo002.bot.utils.PacketUtils.*;
 
@@ -37,18 +41,30 @@ public class GrowtopiaBot {
     private int respawnX;
     private int respawnY;
 
-    public GrowtopiaBot(String userName, String userPassword) {
-        this.userName = userName;
-        this.userPassword = userPassword;
+    public GrowtopiaBot(BotData botData) {
+        this.userName = botData.getBotUsername();
+        this.userPassword = botData.getBotPassword();
         this.gameObjects = new ArrayList<>();
     }
+
+    public void sendMessage(String msg) {
+        PacketUtils.sendPacket(2, ActionPacket.INPUT_TEXT.asBuilder().append(msg).getPacketData(), peer);
+    }
+
+    public void sendCommand(String command) {
+        sendMessage("/" + command);
+    }
+
+    /*
+    Other shit
+     */
 
     public void loop() {
         if (worldEnterDelay > 200 && !currentWorld.equals(queueWorld)) {
             if (queueWorld.equals("") || queueWorld.equals("-")) {
                 worldEnterDelay = 0;
             } else {
-                sendPacket(new byte[]{0x03}, "action|join_request\nname|" + queueWorld, peer);
+                sendPacket(3, "action|join_request\nname|" + queueWorld, peer);
                 gameObjects.clear();
             }
             worldEnterDelay = 0;
@@ -67,14 +83,14 @@ public class GrowtopiaBot {
         this.peer = client.connectPeer(new InetSocketAddress(address, port), 2, 0);
         client.flush();
 
-        BotLog.log("Bot with the username of " + userName + " has been connected!");
+        BotLog.log("Bot with the username of " + userName + " has been connected!", BotLog.LogType.BOT);
     }
 
     public void eventLoop() throws Exception {
         ENetEvent event = null;
         ENetPacket packet = null;
-        while (true) {
-            if ((event = client.startService(0)) != null) {
+        while (BotManager.isRunning()) {
+            if ((event = client.startService(1000)) != null) {
                 if (event.getType() == ENetEvent.Type.CONNECT) {
                     // TODO: 03/12/2019 Make something?
                 }
@@ -84,7 +100,7 @@ public class GrowtopiaBot {
                     byte[] b = getBytes(packet.getBytes());
                     PacketHandler handler = PacketUtils.determineHandler(b);
                     if (handler == null) {
-                        PacketType.ON_UNKNOWN.getTankHandler().handle(b);
+                        PacketType.ON_UNKNOWN.getTankHandler().handle(b, null, null);
                     } else {
                         handler.handle(b, getPacketId(b), this);
                     }
@@ -95,7 +111,7 @@ public class GrowtopiaBot {
                     }
                 }
                 if (event.getType() == ENetEvent.Type.DISCONNECT) {
-                    BotLog.log("Disconnected from the server..");
+                    BotLog.log("Disconnected from the server..", BotLog.LogType.BOT);
                 }
             }
         }
